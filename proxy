@@ -1,0 +1,11 @@
+#!/bin/sh
+
+HOST_IP=$(ip route show default | grep ^default | awk '{print $3}')
+PROXY_IP=$(ip addr show dev eth0 | grep 'inet ' | awk '{print $2}' | cut -d '/' -f 1)
+
+# forward all traffic to $PROXY_TARGET
+iptables -t nat -A PREROUTING --dst $PROXY_IP -j DNAT --to-destination $HOST_IP
+iptables -t nat -A POSTROUTING --dst $HOST_IP -j SNAT --to-source $PROXY_IP
+
+# block to stop container from exiting
+while true; do sleep 5; done
